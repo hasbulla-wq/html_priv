@@ -114,6 +114,47 @@ def archive_files():
     return jsonify({'moved': moved, 'errors': errors}), 200
 
 
+@app.route('/api/restore', methods=['POST'])
+def restore_files():
+    """Move arquivos do ARCHIVE_DIR de volta para DATA_DIR."""
+    body = request.get_json(silent=True) or {}
+    files = body.get('files', [])
+
+    if not files or not isinstance(files, list):
+        return jsonify({'error': 'Campo "files" obrigatório (lista)'}), 400
+
+    manifest = _read_manifest()
+    restored, errors = [], []
+
+    for filename in files:
+        if not VALID_FILENAME.match(str(filename)):
+            errors.append({'file': filename, 'error': 'nome inválido'})
+            continue
+
+        src = os.path.join(ARCHIVE_DIR, filename)
+        dst = os.path.join(DATA_DIR, filename)
+
+        if not os.path.isfile(src):
+            errors.append({'file': filename, 'error': 'arquivo não encontrado no arquivo morto'})
+            continue
+
+        try:
+            if os.path.isfile(dst):
+                ts = datetime.now(timezone.utc).strftime('%Y%m%d%H%M%S')
+                dst = os.path.join(DATA_DIR, f'{ts}_{filename}')
+
+            shutil.move(src, dst)
+            manifest.pop(filename, None)
+            restored.append(os.path.basename(dst))
+            app.logger.info('Restaurado: %s → %s', src, dst)
+        except Exception as e:
+            app.logger.error('Erro ao restaurar %s: %s', filename, e)
+            errors.append({'file': filename, 'error': str(e)})
+
+    _write_manifest(manifest)
+    return jsonify({'restored': restored, 'errors': errors}), 200
+
+
 @app.route('/api/archived')
 def list_archived():
     """Lista os arquivos no arquivo morto com a data de arquivamento."""
