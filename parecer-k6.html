@@ -1,0 +1,515 @@
+<!-- Parecer de Segurança de Fornecedor — k6 (Grafana Labs) -->
+<title>Parecer de Segurança — k6</title>
+<style>
+  :root{
+    --rosa:#ff005a;
+    --rosa-2:#ff5667;
+    --roxo:#4f0072;
+    --roxo-2:#7a006b;
+    --azul:#253077;
+    --texto:#1a1a1a;
+    --texto-2:#12101f;
+    --tabela-bg:#e9e9e9;
+    --label:#919191;
+    --papel:#ffffff;
+    --fundo:#efeaf3;
+    --linha:#ddd6e3;
+    --baixo:#27bbb5;
+    --medio:#f38b61;
+    --alto:#ff005a;
+    --critico:#4f0072;
+  }
+
+  *{box-sizing:border-box;}
+
+  body{
+    background:var(--fundo);
+    color:var(--texto);
+    font-family:'Inter','Segoe UI',sans-serif;
+    padding:32px 16px 48px;
+    line-height:1.6;
+  }
+
+  .doc{
+    max-width:880px;
+    margin:0 auto;
+    background:var(--papel);
+    box-shadow:0 8px 32px rgba(79,0,114,0.14);
+    border-radius:4px;
+    overflow:hidden;
+  }
+
+  /* ---------- Cabeçalho institucional ---------- */
+  .classificacao-topo{
+    background:var(--texto-2);
+    color:#f4f0f6;
+    font-size:11px;
+    font-weight:600;
+    letter-spacing:.08em;
+    text-transform:uppercase;
+    text-align:center;
+    padding:6px 12px;
+  }
+
+  .header{
+    background:linear-gradient(135deg,var(--roxo) 0%,var(--roxo-2) 100%);
+    color:#fff;
+    padding:32px clamp(20px,5vw,44px) 28px;
+    position:relative;
+  }
+
+  .header-top{
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-start;
+    gap:16px;
+    flex-wrap:wrap;
+  }
+
+  .brand{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    font-weight:700;
+    font-size:15px;
+    letter-spacing:.04em;
+  }
+
+  .brand .asterisco{
+    color:var(--rosa);
+    font-size:20px;
+    line-height:1;
+  }
+
+  .badge-classificacao{
+    background:var(--rosa);
+    color:#fff;
+    font-size:11px;
+    font-weight:700;
+    letter-spacing:.06em;
+    text-transform:uppercase;
+    padding:6px 12px;
+    border-radius:3px;
+    white-space:nowrap;
+  }
+
+  .header h1{
+    margin:22px 0 4px;
+    font-size:clamp(24px,4vw,32px);
+    font-weight:700;
+    text-wrap:balance;
+  }
+
+  .header .subtitulo{
+    color:#e3d4ec;
+    font-size:15px;
+    font-weight:500;
+  }
+
+  .meta-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+    gap:16px 28px;
+    background:var(--papel);
+    padding:22px clamp(20px,5vw,44px);
+    border-bottom:1px solid var(--linha);
+  }
+
+  .meta-item .label{
+    display:block;
+    font-size:10.5px;
+    font-weight:600;
+    letter-spacing:.07em;
+    text-transform:uppercase;
+    color:var(--label);
+    margin-bottom:3px;
+  }
+
+  .meta-item .valor{
+    font-size:14px;
+    font-weight:600;
+    color:var(--texto-2);
+  }
+
+  /* ---------- Corpo ---------- */
+  .corpo{
+    padding:8px clamp(20px,5vw,44px) 12px;
+  }
+
+  section{
+    padding:28px 0;
+    border-bottom:1px solid var(--linha);
+  }
+
+  section:last-of-type{border-bottom:none;}
+
+  h2{
+    color:var(--roxo);
+    font-size:19px;
+    font-weight:700;
+    margin:0 0 14px;
+    padding-left:14px;
+    border-left:4px solid var(--roxo);
+    text-wrap:balance;
+  }
+
+  h2 .num{color:var(--rosa);margin-right:6px;}
+
+  h3{
+    color:var(--texto);
+    font-size:14.5px;
+    font-weight:700;
+    margin:22px 0 8px;
+    padding-left:10px;
+    border-left:2px solid var(--rosa);
+  }
+
+  h3:first-of-type{margin-top:4px;}
+
+  p{margin:0 0 12px;font-size:14.5px;color:var(--texto);}
+  p:last-child{margin-bottom:0;}
+
+  .lead p{font-size:15.5px;}
+
+  ul{margin:0 0 12px;padding-left:20px;}
+  li{font-size:14.5px;margin-bottom:6px;}
+  li:last-child{margin-bottom:0;}
+
+  strong{color:var(--texto-2);}
+
+  /* ---------- Tabelas ---------- */
+  .tabela-wrap{overflow-x:auto;margin:14px 0 4px;}
+
+  table{
+    width:100%;
+    border-collapse:collapse;
+    font-size:13.5px;
+    min-width:520px;
+  }
+
+  thead th{
+    background:var(--roxo);
+    color:#fff;
+    text-align:left;
+    font-weight:600;
+    padding:10px 12px;
+    font-size:12.5px;
+    letter-spacing:.02em;
+  }
+
+  tbody td{
+    padding:10px 12px;
+    border-bottom:1px solid var(--linha);
+    vertical-align:top;
+  }
+
+  tbody tr:nth-child(even){background:var(--tabela-bg);}
+
+  tbody tr:last-child td{border-bottom:none;}
+
+  td.mono{font-variant-numeric:tabular-nums;font-weight:700;color:var(--roxo);}
+
+  /* ---------- Badges de risco ---------- */
+  .badge-risco{
+    display:inline-block;
+    padding:4px 11px;
+    border-radius:20px;
+    font-size:11px;
+    font-weight:700;
+    letter-spacing:.04em;
+    color:#fff;
+    text-transform:uppercase;
+    white-space:nowrap;
+  }
+
+  .badge-baixo{background:var(--baixo);}
+  .badge-medio{background:var(--medio);}
+  .badge-alto{background:var(--alto);}
+  .badge-critico{background:var(--critico);}
+
+  .escala-legenda{
+    display:flex;
+    flex-wrap:wrap;
+    gap:10px 18px;
+    margin:14px 0 4px;
+  }
+
+  .escala-legenda .item{
+    display:flex;
+    align-items:center;
+    gap:7px;
+    font-size:12.5px;
+    color:var(--texto);
+  }
+
+  .swatch{width:11px;height:11px;border-radius:3px;flex:none;}
+
+  /* ---------- Nota de lacuna / gap ---------- */
+  .nota{
+    background:#fbf4f0;
+    border-left:3px solid var(--medio);
+    padding:12px 14px;
+    font-size:13.5px;
+    border-radius:0 4px 4px 0;
+    margin:12px 0;
+    color:var(--texto-2);
+  }
+
+  .nota strong{color:var(--roxo-2);}
+
+  /* ---------- Parecer final ---------- */
+  .parecer-box{
+    text-align:center;
+    padding:28px 20px;
+  }
+
+  .veredito{
+    display:inline-block;
+    background:var(--medio);
+    color:var(--roxo-2);
+    font-weight:800;
+    font-size:clamp(20px,4vw,28px);
+    letter-spacing:.05em;
+    padding:16px 40px;
+    border-radius:6px;
+    border:2px solid var(--roxo-2);
+    margin-bottom:20px;
+  }
+
+  .fundamentacao{
+    max-width:640px;
+    margin:0 auto;
+    text-align:left;
+  }
+
+  .assinatura-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+    gap:16px;
+    max-width:640px;
+    margin:22px auto 0;
+    text-align:left;
+    border-top:1px solid var(--linha);
+    padding-top:18px;
+  }
+
+  /* ---------- Fontes / notas legais ---------- */
+  .fontes{font-size:12.5px;color:var(--label);}
+  .fontes li{margin-bottom:5px;word-break:break-word;}
+
+  .notas-legais{
+    font-size:11.5px;
+    color:var(--label);
+    line-height:1.7;
+  }
+
+  /* ---------- Rodapé ---------- */
+  footer{
+    border-top:3px solid var(--rosa);
+    background:var(--roxo);
+    color:#e3d4ec;
+    padding:16px clamp(20px,5vw,44px);
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    flex-wrap:wrap;
+    gap:8px;
+    font-size:11.5px;
+  }
+
+  footer .marca{color:#fff;font-weight:700;}
+  footer .marca .asterisco{color:var(--rosa);}
+
+  @media print{
+    body{background:#fff;padding:0;}
+    .doc{box-shadow:none;max-width:100%;}
+    section{page-break-inside:avoid;}
+  }
+
+  @media (max-width:520px){
+    .veredito{font-size:18px;padding:14px 22px;}
+  }
+</style>
+
+<div class="doc">
+
+  <div class="classificacao-topo">Confidencial — Uso interno restrito</div>
+
+  <header class="header">
+    <div class="header-top">
+      <div class="brand"><span class="asterisco">✱</span> IOB &nbsp;|&nbsp; Segurança da Informação e Governança de Riscos</div>
+      <span class="badge-classificacao">Confidencial</span>
+    </div>
+    <h1>Parecer de Segurança de Fornecedor</h1>
+    <div class="subtitulo">Objeto avaliado: k6 — ferramenta de teste de carga, Grafana Labs</div>
+  </header>
+
+  <div class="meta-grid">
+    <div class="meta-item"><span class="label">Empresa</span><span class="valor">Grupo IOB</span></div>
+    <div class="meta-item"><span class="label">Data</span><span class="valor">22 de setembro de 2026</span></div>
+    <div class="meta-item"><span class="label">Analista responsável</span><span class="valor">Fabricio Negrini</span></div>
+    <div class="meta-item"><span class="label">Área</span><span class="valor">Segurança da Informação e Governança de Riscos Cibernéticos</span></div>
+    <div class="meta-item"><span class="label">Classificação da informação</span><span class="valor">Confidencial — uso interno restrito</span></div>
+    <div class="meta-item"><span class="label">Versão do documento</span><span class="valor">1.0</span></div>
+  </div>
+
+  <div class="corpo">
+
+    <!-- ========== SUMÁRIO EXECUTIVO ========== -->
+    <section class="lead">
+      <h2><span class="num">01</span>Sumário executivo</h2>
+      <p>O k6 é um software de teste de carga. Ele simula o acesso de muitos usuários a um sistema ao mesmo tempo, antes desse sistema entrar em produção. A Grafana Labs, empresa que também mantém o Grafana, desenvolve o k6 como código aberto e gratuito desde a aquisição do projeto original, em 2021.</p>
+      <p>Existem duas formas de usar a ferramenta. A primeira instala o programa nos próprios servidores da IOB, sem enviar dados de teste para fora da empresa. A segunda usa o serviço pago na nuvem da Grafana Labs. Esta análise considera a primeira forma como cenário principal de uso, por ser o modelo descrito na página oficial avaliada.</p>
+      <p>A pesquisa não encontrou falhas de segurança conhecidas e sem correção no k6. A ferramenta não guarda nem processa dados de clientes por conta própria, ela apenas executa os testes que a equipe da IOB escrever. Por isso, o maior risco está no uso: um teste escrito com dados reais de clientes pode expor esse dado real nos resultados.</p>
+      <p>A recomendação é aprovar o uso do k6 com condições simples de aplicar: testar sempre com dados fictícios, desligar o envio automático de estatísticas de uso e restringir o acesso aos servidores onde a ferramenta roda. Os detalhes técnicos de cada ponto estão nas próximas seções, e as condições obrigatórias estão detalhadas na Seção de Ressalvas.</p>
+    </section>
+
+    <!-- ========== ANÁLISE TÉCNICA ========== -->
+    <section>
+      <h2><span class="num">02</span>Análise técnica detalhada</h2>
+      <p>Esta análise considera o k6 como ferramenta de código aberto, descrita na página oficial <strong>grafana.com/oss/k6</strong> e na documentação pública da Grafana Labs. O cenário principal avaliado é a instalação local (self-hosted), integrada a esteiras de integração contínua. Quando relevante, cada subseção também aponta a diferença de risco caso a IOB opte pelo tier pago Grafana Cloud k6.</p>
+
+      <h3>2.1 Identificação do fornecedor e modelo de fornecimento</h3>
+      <div class="tabela-wrap">
+        <table>
+          <tbody>
+            <tr><td><strong>Mantenedor</strong></td><td>Grafana Labs</td></tr>
+            <tr><td><strong>Origem do projeto</strong></td><td>k6, iniciado em 2016, adquirido pela Grafana Labs em 2021</td></tr>
+            <tr><td><strong>Licença do núcleo</strong></td><td>Código aberto, AGPL-3.0</td></tr>
+            <tr><td><strong>Modelo 1</strong></td><td>k6 OSS self-hosted, gratuito, execução local ou em CI/CD próprio</td></tr>
+            <tr><td><strong>Modelo 2</strong></td><td>Grafana Cloud k6 Free, até 500 VUh mensais, retenção de 14 dias</td></tr>
+            <tr><td><strong>Modelo 3</strong></td><td>Grafana Cloud k6 Pro, cobrança por uso, retenção de 30 dias</td></tr>
+            <tr><td><strong>Portal de confiança</strong></td><td>trust.grafana.com (Trust Center público, plataforma SafeBase)</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>2.2 Conformidade com LGPD e GDPR</h3>
+      <p>O k6 self-hosted não processa dados pessoais por conta própria. Ele executa scripts escritos pela própria equipe da IOB e só manipula os dados presentes nesses scripts. A responsabilidade pela conformidade com a LGPD recai sobre quem escreve o teste, não sobre a ferramenta.</p>
+      <p>O tier pago Grafana Cloud passa por auditoria independente de conformidade com o GDPR europeu, além de certificações SOC 2 Type II, ISO 27001, ISO 27017 e PCI DSS, segundo informações públicas do Trust Center da Grafana Labs. Essas certificações cobrem a infraestrutura da Grafana Labs, não substituem uma avaliação de LGPD específica da operação da IOB.</p>
+      <div class="nota"><strong>Lacuna identificada:</strong> as fontes públicas consultadas não apresentam certificação específica de conformidade com a LGPD brasileira. A cobertura de GDPR é um indicativo de maturidade em privacidade, não uma equivalência automática à legislação brasileira.</div>
+
+      <h3>2.3 Criptografia em trânsito e em repouso</h3>
+      <p>Na instalação self-hosted, o k6 não define criptografia própria para os dados de teste, eles permanecem nos servidores e discos que a própria IOB já protege internamente. A criptografia em trânsito depende do protocolo do sistema testado, HTTP ou HTTPS, configurado pela equipe de testes.</p>
+      <p>No tier Grafana Cloud, os dados armazenados usam criptografia AES-256 em repouso e TLS/HTTPS em trânsito, conforme documentação pública da Grafana Labs.</p>
+
+      <h3>2.4 Autenticação e controle de acesso</h3>
+      <p>O k6 self-hosted roda por linha de comando e não tem mecanismo próprio de autenticação, MFA ou controle de acesso. Quem acessa o servidor ou a esteira de CI/CD onde o k6 executa, acessa a ferramenta. O controle de acesso precisa ser aplicado na infraestrutura que hospeda a execução, não na ferramenta em si.</p>
+      <p>O Grafana Cloud oferece SSO, OAuth 2.0, SAML, LDAP, autenticação multifator e controle de acesso baseado em papéis (RBAC) para o painel de gestão e para os resultados armazenados na nuvem.</p>
+
+      <h3>2.5 Histórico de vulnerabilidades (CVEs)</h3>
+      <p>A pesquisa não encontrou advisories de segurança publicados no repositório oficial do k6 (github.com/grafana/k6) até a data desta análise. O projeto mantém um programa de divulgação de vulnerabilidades operado pela Intigriti, com contato criptografado em security@grafana.com, e pede que pesquisadores não divulguem falhas antes da correção oficial. O programa não oferece recompensa financeira.</p>
+      <p>A plataforma Grafana, produto irmão mantido pela mesma empresa e coberto pelo mesmo Trust Center, teve diversos CVEs corrigidos entre 2023 e 2025, incluindo falhas de severidade alta relacionadas a sequestro de conta e execução de scripts maliciosos, como o CVE-2025-4123 e o CVE-2025-6023. Essas falhas afetam o produto de visualização Grafana, não o k6, mas mostram que o ecossistema mantido pelo fornecedor já foi alvo de vulnerabilidades críticas, corrigidas por meio de releases de segurança publicados oficialmente.</p>
+
+      <h3>2.6 Reputação do fornecedor</h3>
+      <p>A Grafana Labs mantém o k6 desde 2021 e sustenta um ecossistema de código aberto amplamente adotado no mercado de observabilidade. A empresa publica um Trust Center próprio, mantém política de divulgação responsável de vulnerabilidades e emite comunicados públicos de segurança a cada correção relevante, o que indica processo estruturado de resposta a incidentes.</p>
+      <p>Como ponto de atenção, o núcleo do k6 segue sob licença AGPL-3.0, o que exige avaliação jurídica antes de qualquer redistribuição ou incorporação do software a um produto comercial da própria IOB. Esse ponto não afeta o uso interno de testes, apenas cenários de redistribuição.</p>
+
+      <h3>2.7 Arquitetura de nuvem e residência de dados</h3>
+      <p>No modelo self-hosted, não existe dependência da nuvem do fornecedor. Toda a execução e o armazenamento de resultados ficam dentro da infraestrutura da IOB, o que elimina a exposição a servidores de terceiros nesse cenário.</p>
+      <p>No modelo Grafana Cloud, a Grafana Labs oferece múltiplas regiões de hospedagem e conectividade privada, chamada PrivateLink, para AWS e Azure, o que reduz o tráfego de dados pela internet pública. A escolha da região de hospedagem e a formalização de um contrato de tratamento de dados são condições prévias para esse modelo, detalhadas na Seção de Ressalvas.</p>
+
+      <h3>2.8 Telemetria de uso</h3>
+      <p>O binário k6, mesmo na versão self-hosted, envia por padrão um relatório de uso anônimo aos servidores da Grafana Labs a cada execução. Segundo a documentação oficial, esse relatório contém apenas a versão do k6 e as extensões usadas, sem conteúdo dos testes. O envio pode ser desabilitado pela flag <code>--no-usage-report</code> ou pela variável de ambiente <code>K6_NO_USAGE_REPORT</code>.</p>
+
+      <h3>2.9 Matriz de riscos identificados</h3>
+      <p>Metodologia: Probabilidade (P, de 1 a 3) multiplicada por Impacto (I, de 1 a 3). A tabela de escala abaixo define os níveis e o tratamento associado a cada faixa de pontuação.</p>
+
+      <div class="tabela-wrap">
+        <table>
+          <thead><tr><th>Pontuação (P × I)</th><th>Nível</th><th>Tratamento</th></tr></thead>
+          <tbody>
+            <tr><td class="mono">1 a 2</td><td><span class="badge-risco badge-baixo">Baixo</span></td><td>Monitoramento periódico. Aceitação pelo gestor.</td></tr>
+            <tr><td class="mono">3 a 4</td><td><span class="badge-risco badge-medio">Médio</span></td><td>Plano de mitigação documentado. Revisão do DPO.</td></tr>
+            <tr><td class="mono">6</td><td><span class="badge-risco badge-alto">Alto</span></td><td>Mitigação obrigatória antes do go-live. Comitê de aprovação.</td></tr>
+            <tr><td class="mono">9</td><td><span class="badge-risco badge-critico">Crítico</span></td><td>Bloqueio até remediação. Escalonamento à Direção.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="escala-legenda">
+        <div class="item"><span class="swatch" style="background:var(--baixo)"></span>Probabilidade e Impacto: 1 = baixo, 2 = médio, 3 = alto</div>
+      </div>
+
+      <div class="tabela-wrap">
+        <table>
+          <thead><tr><th>ID</th><th>Risco identificado</th><th>P</th><th>I</th><th>P×I</th><th>Nível</th></tr></thead>
+          <tbody>
+            <tr><td class="mono">R-01</td><td>Uso de dados reais de clientes (PII) em scripts ou massas de teste, sem mascaramento ou anonimização.</td><td>2</td><td>3</td><td class="mono">6</td><td><span class="badge-risco badge-alto">Alto</span></td></tr>
+            <tr><td class="mono">R-02</td><td>Ausência de controle de acesso nativo (autenticação, MFA, RBAC) na ferramenta CLI self-hosted.</td><td>2</td><td>2</td><td class="mono">4</td><td><span class="badge-risco badge-medio">Médio</span></td></tr>
+            <tr><td class="mono">R-03</td><td>Telemetria de uso enviada por padrão à Grafana Labs a cada execução, sem governança formal da saída de dados.</td><td>3</td><td>1</td><td class="mono">3</td><td><span class="badge-risco badge-medio">Médio</span></td></tr>
+            <tr><td class="mono">R-04</td><td>Licença AGPL-3.0 do núcleo k6, com obrigações de copyleft em caso de redistribuição ou incorporação a produto próprio.</td><td>1</td><td>2</td><td class="mono">2</td><td><span class="badge-risco badge-baixo">Baixo</span></td></tr>
+            <tr><td class="mono">R-05</td><td>Adoção futura do tier Grafana Cloud, com armazenamento de resultados em infraestrutura de terceiro.</td><td>1</td><td>2</td><td class="mono">2</td><td><span class="badge-risco badge-baixo">Baixo</span></td></tr>
+            <tr><td class="mono">R-06</td><td>Histórico de CVEs de severidade alta na plataforma Grafana, ecossistema irmão do k6, sob o mesmo fornecedor.</td><td>1</td><td>2</td><td class="mono">2</td><td><span class="badge-risco badge-baixo">Baixo</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ========== PARECER FINAL ========== -->
+    <section class="parecer-box">
+      <h2 style="text-align:left"><span class="num">03</span>Parecer final</h2>
+      <div class="veredito">[ APROVADO COM RESSALVAS ]</div>
+      <div class="fundamentacao">
+        <p>Com base nas informações analisadas, recomenda-se o <strong>uso do k6 com ressalvas</strong>, condicionado à implementação integral do plano de ação descrito na Seção de Ressalvas e à observância do escopo de uso definido pela área de Segurança da Informação.</p>
+        <p>O risco de maior pontuação identificado, R-01, decorre do uso indevido da ferramenta, e não de uma falha do fornecedor. O k6 em si não apresenta vulnerabilidades conhecidas sem correção nem histórico de incidentes próprios.</p>
+        <p><strong>Risco residual aceito (R-RES-01):</strong> dependência de infraestrutura de terceiro caso a IOB opte futuramente pelo tier Grafana Cloud k6, aceito mediante formalização prévia de contrato e Acordo de Tratamento de Dados (DPA).</p>
+      </div>
+      <div class="assinatura-grid">
+        <div class="meta-item"><span class="label">Analista responsável</span><span class="valor">Fabricio Negrini</span></div>
+        <div class="meta-item"><span class="label">Área</span><span class="valor">Segurança da Informação e Governança de Riscos</span></div>
+        <div class="meta-item"><span class="label">Data do parecer</span><span class="valor">22 de setembro de 2026</span></div>
+      </div>
+    </section>
+
+    <!-- ========== RESSALVAS ========== -->
+    <section>
+      <h2><span class="num">04</span>Seção de ressalvas</h2>
+      <p>As condicionantes abaixo são obrigatórias antes do uso operacional do k6 em ambientes que envolvam sistemas de produção ou dados de clientes.</p>
+
+      <div class="tabela-wrap">
+        <table>
+          <thead><tr><th>#</th><th>Ação</th><th>Prioridade</th><th>Responsável</th></tr></thead>
+          <tbody>
+            <tr><td class="mono">1</td><td>Formalizar política de dados fictícios ou mascarados para scripts e massas de teste. Uso de dados reais de produção sem anonimização fica vedado.</td><td>Alta</td><td>Área solicitante e Segurança da Informação</td></tr>
+            <tr><td class="mono">2</td><td>Restringir e registrar o acesso à infraestrutura que hospeda a execução do k6, runners de CI/CD, servidores e cofre de segredos.</td><td>Média</td><td>Infraestrutura e DevOps</td></tr>
+            <tr><td class="mono">3</td><td>Desabilitar a telemetria de uso padrão do k6 nas esteiras corporativas de CI/CD, via flag <code>--no-usage-report</code> ou variável <code>K6_NO_USAGE_REPORT</code>.</td><td>Média</td><td>Engenharia e DevOps</td></tr>
+            <tr><td class="mono">4</td><td>Submeter o licenciamento AGPL-3.0 à análise jurídica antes de qualquer redistribuição ou incorporação do k6 a produto ou serviço comercial da IOB.</td><td>Condicional</td><td>Jurídico e Compliance</td></tr>
+            <tr><td class="mono">5</td><td>Em caso de migração futura ao tier Grafana Cloud k6, formalizar contrato e DPA, e confirmar a região de residência dos dados antes da ativação.</td><td>Condicional</td><td>Privacidade e Governança, Jurídico</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Recomendações complementares</h3>
+      <ul>
+        <li>Acompanhar periodicamente os boletins de segurança da Grafana Labs, disponíveis em trust.grafana.com e no repositório github.com/grafana/k6.</li>
+        <li>Manter o k6 sempre atualizado na versão estável mais recente nas pipelines corporativas.</li>
+        <li>Revisar esta avaliação em caso de mudança do modelo de uso, especialmente na migração do modo self-hosted para o Grafana Cloud.</li>
+      </ul>
+
+      <h3>Fontes públicas consultadas</h3>
+      <ul class="fontes">
+        <li>grafana.com/oss/k6/ — página oficial do produto</li>
+        <li>github.com/grafana/k6 — repositório oficial, licença e advisories de segurança</li>
+        <li>github.com/grafana/k6/security/policy — política de divulgação de vulnerabilidades</li>
+        <li>grafana.com/docs/k6/latest/set-up/usage-collection/ — documentação sobre telemetria de uso</li>
+        <li>trust.grafana.com — Trust Center da Grafana Labs</li>
+        <li>grafana.com/legal/security-compliance/ e grafana.com/legal/data-security-policy/ — políticas públicas de segurança e conformidade</li>
+      </ul>
+
+      <p class="notas-legais">
+        ¹ ISO/IEC 27005:2022, gestão de riscos de segurança da informação.<br>
+        ² NIST SP 800-30, guia para avaliações de risco.<br>
+        ³ ABNT NBR ISO 31000:2018, gestão de riscos, diretrizes.<br>
+        ⁴ Lei nº 13.709/2018 (LGPD), Lei Geral de Proteção de Dados Pessoais.
+      </p>
+    </section>
+
+  </div>
+
+  <footer>
+    <span class="marca"><span class="asterisco">✱</span> IOB | Segurança da Informação e Governança de Riscos</span>
+    <span>Confidencial — uso interno restrito · Página 1 de 1</span>
+  </footer>
+
+</div>
